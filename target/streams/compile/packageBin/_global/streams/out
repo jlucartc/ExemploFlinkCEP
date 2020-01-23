@@ -1,0 +1,27 @@
+[0m[[0m[0mdebug[0m] [0m[0mPackaging /home/luca/FlinkCEP/target/scala-2.12/flinkcep_2.12-0.1.jar ...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Main$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/Main$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Main$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/Main$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	META-INF[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/META-INF[0m
+[0m[[0m[0mdebug[0m] [0m[0m	META-INF/FlinkCEP.kotlin_module[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/META-INF/FlinkCEP.kotlin_module[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses/ExamplePipeline$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses/ExamplePipeline$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses/BelongsToPolygon.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses/BelongsToPolygon.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses/FlinkCEPPipeline.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses/FlinkCEPPipeline.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses/FlinkCEPPipeline$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses/FlinkCEPPipeline$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FlinkCEPClasses/ExamplePipeline.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/FlinkCEPClasses/ExamplePipeline.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Main.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/luca/FlinkCEP/target/scala-2.12/classes/Main.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mDone packaging.[0m
