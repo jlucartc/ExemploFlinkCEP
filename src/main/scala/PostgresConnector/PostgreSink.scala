@@ -1,5 +1,6 @@
 package PostgresConnector
 
+import java.util._
 import org.apache.flink.api.common.ExecutionConfig
 import org.apache.flink.streaming.api.functions.sink.{SinkFunction, TwoPhaseCommitSinkFunction}
 import org.apache.flink.streaming.api.scala._
@@ -34,8 +35,12 @@ class PostgreSink(props : Properties, config : ExecutionConfig) extends TwoPhase
                 
             }
             
-        }catch(e){
-        
+        }catch{
+    
+            case e : Exception =>
+                    println("Erro")
+            
+            
         }
     
     }
