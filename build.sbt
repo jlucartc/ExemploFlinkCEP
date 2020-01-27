@@ -4,9 +4,6 @@ version := "0.1"
 
 scalaVersion := "2.12.10"
 
-// https://mvnrepository.com/artifact/org.apache.flink/flink-cep-scala
-//libraryDependencies += "org.apache.flink" %% "flink-cep-scala" % "1.9.0"
-
 // https://mvnrepository.com/artifact/org.apache.flink/flink-cep
 libraryDependencies += "org.apache.flink" %% "flink-cep" % "1.9.0"
 
@@ -33,3 +30,9 @@ libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.6.2" % Test
 
 // https://mvnrepository.com/artifact/org.scala-lang/scala-library
 libraryDependencies += "org.scala-lang" % "scala-library" % "2.12.10"
+
+// https://mvnrepository.com/artifact/org.postgresql/postgresql
+libraryDependencies += "org.postgresql" % "postgresql" % "42.2.9"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-runtime-web
+libraryDependencies += "org.apache.flink" %% "flink-runtime-web" % "1.9.0" % Test

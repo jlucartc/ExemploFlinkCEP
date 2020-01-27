@@ -1,6 +1,8 @@
 package FlinkCEPClasses
 
+import PostgresConnector.PostgreSink
 import org.apache.flink.api.java.io.TextInputFormat
+import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.cep.PatternSelectFunction
 import org.apache.flink.cep.pattern.conditions.SimpleCondition
 import org.apache.flink.cep.scala.pattern.Pattern
@@ -10,8 +12,10 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.cep.scala.{CEP, PatternStream}
 import org.apache.flink.streaming.api.functions.source.FileProcessingMode
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+import java.util.Properties
 
-import scala.collection.Map
+import org.apache.flink.api.common.ExecutionConfig
+import org.slf4j.{Logger, LoggerFactory}
 
 class FlinkCEPPipeline {
 
@@ -50,19 +54,36 @@ class FlinkCEPPipeline {
      tupla e o cálculo de distância entre dois pontos é imediata.
      
    */
-  
+  val LOG: Logger = LoggerFactory.getLogger(classOf[FlinkCEPPipeline])
+  LOG.info("Iniciando Pipeline...")
+  println("Iniciando Pipeline")
   
   var env : StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
   env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
   env.setParallelism(1)
 
-  var input : DataStream[String] = env.readFile(new TextInputFormat(new Path("/home/luca/Desktop/lines")),"/home/luca/Desktop/lines",FileProcessingMode.PROCESS_CONTINUOUSLY,1)
+  //var input : DataStream[String] = env.readFile(new TextInputFormat(new Path("/home/luca/Desktop/lines")),"/home/luca/Desktop/lines",FileProcessingMode.PROCESS_CONTINUOUSLY,1)
 
-  var padrao = Pattern.begin[String]("igual").where(new BelongsToPolygon())
-  val CEPstream: PatternStream[String] = CEP.pattern[String](input,padrao)
+  var input : DataStream[String] = env.readTextFile("/home/luca/Desktop/lines")
   
-  val result: DataStream[String] = CEPstream.select(new PatternSelectFunction[String,String](){
+  var tupleStream : DataStream[(String,String,String)] = input.map(new S2PlacaMapFunction())
+  
+  var properties : Properties = new Properties()
+  
+  properties.setProperty("driver","org.postgresql.Driver")
+  properties.setProperty("url","jdbc:postgresql://localhost:5432/mydb")
+  properties.setProperty("user","luca")
+  properties.setProperty("password","root")
+  
+  tupleStream.addSink(new PostgreSink(properties, new ExecutionConfig()))
+  
+  //input.writeAsText("/home/luca/Desktop/output",FileSystem.WriteMode.OVERWRITE)
+  
+  //var padrao = Pattern.begin[String]("igual").where(new BelongsToPolygon())
+  //val CEPstream: PatternStream[String] = CEP.pattern[String](input,padrao)
+  
+  /*val result: DataStream[String] = CEPstream.select(new PatternSelectFunction[String,String](){
     override def select(matches: java.util.Map[String,java.util.List[String]]): String = {
       if(matches.containsKey("igual")) {
           matches.get("igual").get(0)
@@ -70,9 +91,9 @@ class FlinkCEPPipeline {
         "ASDASDASDSDAS"
       }
     }
-  })
+  })*/
   
-  result.writeAsText("/home/luca/Desktop/flinkcepout",FileSystem.WriteMode.OVERWRITE)
+  //result.writeAsText("/home/luca/Desktop/flinkcepout",FileSystem.WriteMode.OVERWRITE)
 
   env.execute()
 
