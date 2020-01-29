@@ -1,127 +1,162 @@
 package PostgresConnector
 
-import java.sql.{PreparedStatement,DriverManager}
-import java.util.{Properties,UUID}
-import org.postgresql.Driver
+import java.sql.{BatchUpdateException, DriverManager, PreparedStatement, SQLException, Timestamp}
+import java.text.ParseException
+import java.util.{Date, Properties, UUID}
 import org.apache.flink.api.common.ExecutionConfig
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.sink.{SinkFunction, TwoPhaseCommitSinkFunction}
 import org.apache.flink.streaming.api.scala._
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
+import org.slf4j.{Logger, LoggerFactory}
 
 
 
-class PostgreSink(props : Properties, config : ExecutionConfig) extends TwoPhaseCommitSinkFunction[(String,String,String),String,String](createTypeInformation[String].createSerializer(config),createTypeInformation[String].createSerializer(config)){
+
+class PostgreSink(props : Properties, config : ExecutionConfig) extends TwoPhaseCommitSinkFunction[(String,Timestamp,Double,Double),String,String](createTypeInformation[String].createSerializer(config),createTypeInformation[String].createSerializer(config)){
     
-    private var transactionMap : Map[String,(String,String,String)] = Map()
+    private var transactionMap : Map[String,Array[(String,Timestamp,Double,Double)]] = Map()
     
     private var parsedQuery : PreparedStatement = _
     
-    private val insertionString : String = "INSERT INTO mydb.placas (placa,timestamp,ponto) values (?,?,?)"
+    private val insertionString : String = "INSERT INTO placas (placa,timestamp,ponto) values (?,?,point(?,?))"
     
-    private var isset : Boolean = false
+    override def invoke(transaction: String, value: (String,Timestamp,Double,Double), context: SinkFunction.Context[_]): Unit = {
     
-    override def invoke(transaction: String, value: (String,String,String), context: SinkFunction.Context[_]): Unit = {
+        val LOG = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
         
-        val item = this.transactionMap.get(transaction)
-        this.transactionMap += (transaction -> (value._1,value._2,value._3))
+        val res = this.transactionMap.get(transaction)
+        
+        if(res.isDefined){
+    
+            var array = res.get
+            
+            array = array ++ Array(value)
+    
+            this.transactionMap += (transaction -> array)
+            
+        }else{
+    
+            val array = Array(value)
+    
+            this.transactionMap += (transaction -> array)
+            
+            
+        }
+    
+        LOG.info("\n\nPassing through invoke\n\n")
+        
+        ()
         
     }
     
     override def beginTransaction(): String = {
-        
-        if(!this.isset) {
     
-            val LOG: Logger = LoggerFactory.getLogger(classOf[PostgreSink])
-            LOG.info("Configurando parametros da conexão com BD")
-            val driver = props.getProperty("driver")
-            val url = props.getProperty("url")
-            val user = props.getProperty("user")
-            val password = props.getProperty("password")
-            Class.forName(driver)
-            val connection = DriverManager.getConnection(url + "?user=" + user + "&password=" + password)
-            this.parsedQuery = connection.prepareStatement(insertionString)
+        val LOG: Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
         
-            this.isset = true
-            
-        }
-        
-        val identificador = UUID.randomUUID.toString
-        
-        val m : Option[(String,String,String)]= this.transactionMap.get(identificador)
-        
-        var hasId  = true
-        
-        while(hasId){
-            
-            if( m == None ) {
-                this.transactionMap += (identificador -> ("", "",""))
-            }
+        val identifier = UUID.randomUUID.toString
     
-    
-        }
+        LOG.info("\n\nPassing through beginTransaction\n\n")
         
-        identificador
+        identifier
+        
         
     }
     
-    override def preCommit(transaction: String): Unit = {}
+    override def preCommit(transaction: String): Unit = {
+        
+        val LOG = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
+    
+        try{
+        
+            val tuple : Option[Array[(String,Timestamp,Double,Double)]]= this.transactionMap.get(transaction)
+        
+            if(tuple.isDefined){
+            
+                tuple.get.foreach( (value : (String,Timestamp,Double,Double)) => {
+                
+                    LOG.info("\n\n"+value.toString()+"\n\n")
+                
+                    this.parsedQuery.setString(1,value._1)
+                    this.parsedQuery.setString(2,value._2.toString)
+                    this.parsedQuery.setString(3,value._3.toString)
+                    this.parsedQuery.setString(4,value._4.toString)
+                    this.parsedQuery.addBatch()
+                
+                })
+                
+            }
+        
+        }catch{
+        
+            case e : SQLException =>
+                LOG.info("\n\nError when adding transaction to batch: SQLException\n\n")
+        
+            case f : ParseException =>
+                LOG.info("\n\nError when adding transaction to batch: ParseException\n\n")
+        
+            case g : NoSuchElementException =>
+                LOG.info("\n\nError when adding transaction to batch: NoSuchElementException\n\n")
+        
+            case h : Exception =>
+                LOG.info("\n\nError when adding transaction to batch: Exception\n\n")
+        
+        }
+        
+        this.transactionMap = this.transactionMap.empty
+    
+        LOG.info("\n\nPassing through preCommit...\n\n")
+    }
     
     override def commit(transaction: String): Unit = {
     
-        try{
-            
-            this.transactionMap.foreach{
-                
-                (t) => {
-                    
-                    this.parsedQuery.setString(1,t._2._1)
-                    this.parsedQuery.setString(2,t._2._2)
-                    this.parsedQuery.setString(3,t._2._3)
-    
-                    val LOG : Logger = LoggerFactory.getLogger(classOf[PostgreSink])
-                    
-                    LOG.info("Adicionando transação ao batch...")
-                    
-                }
-                
-            }
-            
-        }catch{
-    
-            case e : Exception => {
-                val LOG : Logger = LoggerFactory.getLogger(classOf[PostgreSink])
-                LOG.info("Erro ao adicionar transação ao batch")
-            }
-            
+        val LOG : Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
+        
+        if(this.parsedQuery != null) {
+            LOG.info("\n\n" + this.parsedQuery.toString+ "\n\n")
         }
         
         try{
             
             this.parsedQuery.executeBatch
-            val LOG : Logger = LoggerFactory.getLogger(classOf[PostgreSink])
-            LOG.info("Executando batch...")
+            val LOG : Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
+            LOG.info("\n\nExecuting batch\n\n")
             
         }catch{
     
-            case e : Exception => {
-                val LOG : Logger = LoggerFactory.getLogger(classOf[PostgreSink])
-                LOG.info("Erro ao executar batch")
-            }
+            case e : SQLException =>
+                val LOG : Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
+                LOG.info("\n\n"+"Error : SQLException"+"\n\n")
             
         }
+        
+        this.transactionMap = this.transactionMap.empty
     
+        LOG.info("\n\nPassing through commit...\n\n")
+        
     }
     
     override def abort(transaction: String): Unit = {
+    
+        val LOG : Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
         
-        this.transactionMap = Map()
+        this.transactionMap = this.transactionMap.empty
+    
+        LOG.info("\n\nPassing through abort...\n\n")
         
     }
     
-    override def open(param: Configuration): Unit = {
-
-    }
+    override def open(parameters: Configuration): Unit = {
     
+        val LOG: Logger = LoggerFactory.getLogger(classOf[FlinkCEPClasses.FlinkCEPPipeline])
+        
+        val driver = props.getProperty("driver")
+        val url = props.getProperty("url")
+        val user = props.getProperty("user")
+        val password = props.getProperty("password")
+        Class.forName(driver)
+        val connection = DriverManager.getConnection(url + "?user=" + user + "&password=" + password)
+        this.parsedQuery = connection.prepareStatement(insertionString)
+    
+        LOG.info("\n\nConfiguring BD conection parameters\n\n")
+    }
 }

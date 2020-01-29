@@ -36,3 +36,29 @@ libraryDependencies += "org.postgresql" % "postgresql" % "42.2.9"
 
 // https://mvnrepository.com/artifact/org.apache.flink/flink-runtime-web
 libraryDependencies += "org.apache.flink" %% "flink-runtime-web" % "1.9.0" % Test
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-jdbc
+libraryDependencies += "org.apache.flink" %% "flink-jdbc" % "1.9.0"
+
+// --- Table API ---
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-common
+libraryDependencies += "org.apache.flink" % "flink-table-common" % "1.9.0" % "provided"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-api-java
+libraryDependencies += "org.apache.flink" % "flink-table-api-java" % "1.9.0"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-api-scala
+libraryDependencies += "org.apache.flink" %% "flink-table-api-scala" % "1.9.0"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-api-scala-bridge
+libraryDependencies += "org.apache.flink" %% "flink-table-api-scala-bridge" % "1.9.0"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-planner-blink
+libraryDependencies += "org.apache.flink" %% "flink-table-planner-blink" % "1.9.0"
+
+// https://mvnrepository.com/artifact/org.apache.flink/flink-table-runtime-blink
+libraryDependencies += "org.apache.flink" %% "flink-table-runtime-blink" % "1.9.0"
+
+
+// --- Table API End ---

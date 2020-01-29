@@ -1,5 +1,7 @@
 package FlinkCEPClasses
 
+import java.sql.Timestamp
+
 import PostgresConnector.PostgreSink
 import org.apache.flink.api.java.io.TextInputFormat
 import org.apache.flink.api.java.utils.ParameterTool
@@ -55,19 +57,20 @@ class FlinkCEPPipeline {
      
    */
   val LOG: Logger = LoggerFactory.getLogger(classOf[FlinkCEPPipeline])
-  LOG.info("Iniciando Pipeline...")
-  println("Iniciando Pipeline")
+  LOG.info("\n\nIniciando Pipeline...\n\n")
   
   var env : StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
+  env.enableCheckpointing(10)
+  //env.getCheckpointConfig.setMinPauseBetweenCheckpoints(500)
   env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
   env.setParallelism(1)
 
   //var input : DataStream[String] = env.readFile(new TextInputFormat(new Path("/home/luca/Desktop/lines")),"/home/luca/Desktop/lines",FileProcessingMode.PROCESS_CONTINUOUSLY,1)
 
-  var input : DataStream[String] = env.readTextFile("/home/luca/Desktop/lines")
+  var input : DataStream[String] = env.readTextFile("/home/luca/Desktop/lines").name("Stream original")
   
-  var tupleStream : DataStream[(String,String,String)] = input.map(new S2PlacaMapFunction())
+  var tupleStream : DataStream[(String,Timestamp,Double,Double)] = input.map(new S2PlacaMapFunction()).name("Tuple Stream")
   
   var properties : Properties = new Properties()
   
@@ -76,24 +79,8 @@ class FlinkCEPPipeline {
   properties.setProperty("user","luca")
   properties.setProperty("password","root")
   
-  tupleStream.addSink(new PostgreSink(properties, new ExecutionConfig()))
-  
-  //input.writeAsText("/home/luca/Desktop/output",FileSystem.WriteMode.OVERWRITE)
-  
-  //var padrao = Pattern.begin[String]("igual").where(new BelongsToPolygon())
-  //val CEPstream: PatternStream[String] = CEP.pattern[String](input,padrao)
-  
-  /*val result: DataStream[String] = CEPstream.select(new PatternSelectFunction[String,String](){
-    override def select(matches: java.util.Map[String,java.util.List[String]]): String = {
-      if(matches.containsKey("igual")) {
-          matches.get("igual").get(0)
-      }else{
-        "ASDASDASDSDAS"
-      }
-    }
-  })*/
-  
-  //result.writeAsText("/home/luca/Desktop/flinkcepout",FileSystem.WriteMode.OVERWRITE)
+  tupleStream.addSink(new PostgreSink(properties,env.getConfig)).name("Postgres Sink").setParallelism(1)
+  tupleStream.writeAsText("/home/luca/Desktop/output",FileSystem.WriteMode.OVERWRITE).name("Output File Sink").setParallelism(1)
 
   env.execute()
 
