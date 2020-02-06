@@ -9,9 +9,6 @@ import org.apache.flink.streaming.api.functions.sink.{SinkFunction, TwoPhaseComm
 import org.apache.flink.streaming.api.scala._
 import org.slf4j.{Logger, LoggerFactory}
 
-
-
-
 class PostgreSink(props : Properties, config : ExecutionConfig) extends TwoPhaseCommitSinkFunction[(String,Timestamp,Double,Double),String,String](createTypeInformation[String].createSerializer(config),createTypeInformation[String].createSerializer(config)){
     
     private var transactionMap : Map[String,Array[(String,Timestamp,Double,Double)]] = Map()
