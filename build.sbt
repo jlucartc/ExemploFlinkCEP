@@ -10,9 +10,6 @@ libraryDependencies += "org.apache.flink" %% "flink-cep" % "1.9.0"
 // https://mvnrepository.com/artifact/org.apache.flink/flink-cep-scala
 libraryDependencies += "org.apache.flink" %% "flink-cep-scala" % "1.9.0"
 
-// https://mvnrepository.com/artifact/org.apache.flink/flink-runtime
-libraryDependencies += "org.apache.flink" %% "flink-runtime" % "1.9.0" % Test
-
 // https://mvnrepository.com/artifact/org.apache.flink/flink-scala
 libraryDependencies += "org.apache.flink" %% "flink-scala" % "1.9.0"
 
@@ -35,7 +32,7 @@ libraryDependencies += "org.scala-lang" % "scala-library" % "2.12.10"
 libraryDependencies += "org.postgresql" % "postgresql" % "42.2.9"
 
 // https://mvnrepository.com/artifact/org.apache.flink/flink-runtime-web
-libraryDependencies += "org.apache.flink" %% "flink-runtime-web" % "1.9.0" % Test
+//libraryDependencies += "org.apache.flink" %% "flink-runtime-web" % "1.9.0" % Test
 
 // https://mvnrepository.com/artifact/org.apache.flink/flink-jdbc
 libraryDependencies += "org.apache.flink" %% "flink-jdbc" % "1.9.0"

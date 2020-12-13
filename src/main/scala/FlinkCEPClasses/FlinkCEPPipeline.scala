@@ -1,22 +1,12 @@
 package FlinkCEPClasses
 
 import java.sql.Timestamp
-
-import PostgresConnector.PostgreSink
-import org.apache.flink.api.java.io.TextInputFormat
-import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.cep.PatternSelectFunction
-import org.apache.flink.cep.pattern.conditions.SimpleCondition
-import org.apache.flink.cep.scala.pattern.Pattern
-import org.apache.flink.core.fs.{FileSystem, Path}
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.cep.scala.{CEP, PatternStream}
-import org.apache.flink.streaming.api.functions.source.FileProcessingMode
-import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import java.util.Properties
 
-import org.apache.flink.api.common.ExecutionConfig
+import PostgresConnector.PostgreSink
+import org.apache.flink.core.fs.FileSystem
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment, _}
 import org.slf4j.{Logger, LoggerFactory}
 
 class FlinkCEPPipeline {
@@ -58,9 +48,7 @@ class FlinkCEPPipeline {
    */
   val LOG: Logger = LoggerFactory.getLogger(classOf[FlinkCEPPipeline])
   LOG.info("\n\nIniciando Pipeline...\n\n")
-  
   var env : StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
   env.enableCheckpointing(10)
   //env.getCheckpointConfig.setMinPauseBetweenCheckpoints(500)
   env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
@@ -68,16 +56,18 @@ class FlinkCEPPipeline {
 
   //var input : DataStream[String] = env.readFile(new TextInputFormat(new Path("/home/luca/Desktop/lines")),"/home/luca/Desktop/lines",FileProcessingMode.PROCESS_CONTINUOUSLY,1)
 
+  // Lê arquivo de texto com as linhas
   var input : DataStream[String] = env.readTextFile("/home/luca/Desktop/lines").name("Stream original")
-  
+
+  // Transforma as linhas do arquivo em tuplas
   var tupleStream : DataStream[(String,Timestamp,Double,Double)] = input.map(new S2PlacaMapFunction()).name("Tuple Stream")
-  
+
+  // Cria as propriedades da conexão com o banco
   var properties : Properties = new Properties()
-  
-  properties.setProperty("driver","org.postgresql.Driver")
-  properties.setProperty("url","jdbc:postgresql://localhost:5432/mydb")
-  properties.setProperty("user","luca")
-  properties.setProperty("password","root")
+  properties.setProperty("driver","org.postgresql.Driver") // Driver do banco
+  properties.setProperty("url","jdbc:postgresql://localhost:5432/flinkdb") // URL do banco no formato de jdbc:driver://host:port/database
+  properties.setProperty("user","flinkdb")
+  properties.setProperty("password","flinkdb")
   
   tupleStream.addSink(new PostgreSink(properties,env.getConfig)).name("Postgres Sink").setParallelism(1)
   tupleStream.writeAsText("/home/luca/Desktop/output",FileSystem.WriteMode.OVERWRITE).name("Output File Sink").setParallelism(1)
